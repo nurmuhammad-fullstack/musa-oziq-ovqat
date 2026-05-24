@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Korporativ Audit Pro — Korxona Moliyaviy Hisobotlash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ============================================================
+       PARTICLES BACKGROUND
+  ============================================================ -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- ============================================================
+       AUTH SCREEN
+  ============================================================ -->
+    <div id="authScreen" class="screen">
+
+
+        <div class="auth-right">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <h2 class="auth-card-title" id="authCardTitle">Xush kelibsiz</h2>
+                    <p class="auth-card-sub" id="authCardSub">Xavfsiz ish maydoningizga kiring</p>
+                </div>
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login',this)">Sign
+                        In</button>
+                    <button class="auth-tab" data-tab="register"
+                        onclick="switchAuthTab('register',this)">Register</button>
+                    <div class="auth-tab-slider" id="authTabSlider"></div>
+                </div>
+
+                <!-- LOGIN -->
+                <div id="loginForm" class="auth-form">
+                    <div class="field-group">
+                        <label class="field-label">Username</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">◎</span>
+                            <input type="text" id="loginUser" class="field-input" placeholder="Enter username"
+                                autocomplete="username" />
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Password</label>
+                        <div class="field-wrap">
+                            <span class="field-icon">◉</span>
+                            <input type="password" id="loginPass" class="field-input" placeholder="••••••••"
+                                autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()" />
+                            <button class="field-eye" onclick="togglePass('loginPass',this)">👁</button>
+                        </div>
+                    </div>
+                    <button class="btn-auth" onclick="handleLogin()">
+                        <span>Sign In</span>
+                        <span class="btn-auth-arrow">→</span>
+                    </button>
+                </div>
+
+                <!-- REGISTER -->
+<form id="registerFormEl" class="auth-form" style="display:none" onsubmit="return false;">
+                    <div class="field-group">
+                        <label class="field-label">Username</label>
+                        <div class="field-wrap">
+                            <input type="text" id="regUser" class="field-input" placeholder="worker1" required minlength="3" />
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Password</label>
+                        <div class="field-wrap">
+                            <input type="password" id="regPass" class="field-input" placeholder="pass123" minlength="4" />
+                            <button class="field-eye" onclick="togglePass('regPass',this)">👁</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-auth" onclick="handleRegister()">
+                        <span>Create Account</span>
+                        <span class="btn-auth-arrow">→</span>
+                    </button>
+                </form>
+
+                <div class="auth-error" id="authError"></div>
+
+                <div class="demo-creds">
+                    <div class="demo-creds-title">Demo Credentials</div>
+                    <div class="demo-row">
+                        <span class="demo-role admin-role">Admin</span>
+                        <code>admin</code> / <code>admin123</code>
+                    </div>
+                    <div class="demo-row">
+                        <span class="demo-role worker-role">Worker</span>
+                        <code>worker1–10</code> / <code>pass123</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+       MAIN APP
+  ============================================================ -->
+    <div id="appScreen" class="screen" style="display:none">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                            <path d="M4 16L16 4L28 16L16 28L4 16Z" stroke="url(#lg3)" stroke-width="2" fill="none" />
+                            <path d="M10 16L16 10L22 16L16 22L10 16Z" fill="url(#lg3)" />
+                            <defs>
+                                <linearGradient id="lg3" x1="4" y1="4" x2="28" y2="28">
+                                    <stop offset="0%" stop-color="#00E5C3" />
+                                    <stop offset="100%" stop-color="#6C63FF" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="sidebar-logo-text">CorpAudit <em>Pro</em></div>
+                </div>
+                <button class="sidebar-collapse" onclick="toggleSidebar()" title="Collapse">‹</button>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="sidebar-avatar" id="sideAvatar"></div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="sideName"></div>
+                    <div class="sidebar-user-dept" id="sideDept"></div>
+                </div>
+                <div class="role-badge" id="sideRole"></div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard',this)">
+                    <span class="nav-icon">⬡</span>
+                    <span class="nav-label">Dashboard</span>
+                    <span class="nav-badge" id="navBadgeDash"></span>
+                </a>
+                <a class="nav-item" data-tab="reports" onclick="switchTab('reports',this)">
+                    <span class="nav-icon">◈</span>
+                    <span class="nav-label">Reports</span>
+                    <span class="nav-badge" id="navBadgeReports"></span>
+                </a>
+                <a class="nav-item" data-tab="submit" onclick="switchTab('submit',this)">
+                    <span class="nav-icon">⊕</span>
+                    <span class="nav-label">Submit Report</span>
+                </a>
+                <a class="nav-item" data-tab="tasks" onclick="switchTab('tasks',this)">
+                    <span class="nav-icon">☰</span>
+                    <span class="nav-label">Task Logs</span>
+                </a>
+
+                <div class="nav-section-label">Analytics</div>
+                <a class="nav-item" data-tab="analytics" onclick="switchTab('analytics',this)">
+                    <span class="nav-icon">◎</span>
+                    <span class="nav-label">Analytics</span>
+                </a>
+                <a class="nav-item" data-tab="integrity" onclick="switchTab('integrity',this)">
+                    <span class="nav-icon">⬟</span>
+                    <span class="nav-label">Integrity</span>
+                    <span class="nav-alert" id="navAlertIntegrity"></span>
+                </a>
+
+                <div class="nav-section-label admin-only" id="navAdminLabel" style="display:none">Administration</div>
+                <a class="nav-item admin-only" data-tab="admin" onclick="switchTab('admin',this)" id="navAdmin"
+                    style="display:none">
+                    <span class="nav-icon">👑</span>
+                    <span class="nav-label">Admin Panel</span>
+                    <span class="nav-badge" id="navBadgeAdmin"></span>
+                </a>
+                <a class="nav-item admin-only" data-tab="auditlog" onclick="switchTab('auditlog',this)" id="navAuditLog"
+                    style="display:none">
+                    <span class="nav-icon">◉</span>
+                    <span class="nav-label">Audit Log</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="sidebar-theme-btn" onclick="toggleTheme()" id="themeBtn">
+                    <span class="theme-icon" id="themeIcon">◑</span>
+                    <span class="nav-label" id="themeLabel">Dark Mode</span>
+                </button>
+                <button class="sidebar-logout" onclick="handleLogout()">
+                    <span>⏻</span>
+                    <span class="nav-label">Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN PANEL -->
+        <main class="main-panel" id="mainPanel">
+
+            <!-- TOP BAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="topbar-menu" onclick="toggleSidebar()">☰</button>
+                    <div class="breadcrumb" id="breadcrumb">
+                        <span class="breadcrumb-root">CorpAudit</span>
+                        <span class="breadcrumb-sep">›</span>
+                        <span class="breadcrumb-cur" id="breadcrumbCur">Dashboard</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-clock" id="topbarClock"></div>
+                    <div class="topbar-notifications" id="topbarNotif">
+                        <button class="notif-btn" onclick="toggleNotifPanel()">
+                            <span>🔔</span>
+                            <span class="notif-count" id="notifCount" style="display:none">0</span>
+                        </button>
+                        <div class="notif-panel" id="notifPanel">
+                            <div class="notif-panel-title">Notifications</div>
+                            <div id="notifList"></div>
+                        </div>
+                    </div>
+                    <div class="topbar-user">
+                        <div class="topbar-avatar" id="topbarAvatar"></div>
+                        <div class="topbar-user-info">
+                            <div class="topbar-user-name" id="topbarName"></div>
+                            <div class="topbar-user-role" id="topbarRole"></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <div class="page-content">
+
+                <!-- ── DASHBOARD ── -->
+                <section class="tab-pane active" id="tab-dashboard">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title" id="dashGreeting">Dashboard</h1>
+                            <p class="page-sub" id="dashSub">Your financial overview</p>
+                        </div>
+                        <div class="page-header-actions">
+                            <button class="btn-ghost" onclick="refreshDashboard()">↻ Refresh</button>
+                            <button class="btn-primary-sm"
+                                onclick="switchTab('submit', document.querySelector('[data-tab=submit]'))">+ New
+                                Report</button>
+                        </div>
+                    </div>
+
+                    <div id="adminBanner" class="admin-banner" style="display:none">
+                        <div class="admin-banner-pulse"></div>
+                        <span class="admin-banner-icon">👑</span>
+                        <div>
+                            <strong>Administrator Access</strong> — You have full visibility across all workers,
+                            departments, and financial records.
+                        </div>
+                    </div>
+
+                    <div class="kpi-grid" id="kpiGrid"></div>
+
+                    <div class="charts-row">
+                        <div class="chart-card large">
+                            <div class="chart-card-header">
+                                <div>
+                                    <div class="chart-title">Revenue & Expense Trends</div>
+                                    <div class="chart-sub">Monthly financial performance — current fiscal year</div>
+                                </div>
+                                <div class="chart-legend" id="revLegend"></div>
+                            </div>
+                            <div class="chart-body"><canvas id="revenueChart"></canvas></div>
+                        </div>
+                        <div class="chart-card small">
+                            <div class="chart-card-header">
+                                <div>
+                                    <div class="chart-title">Report Status</div>
+                                    <div class="chart-sub">Audit cycle distribution</div>
+                                </div>
+                            </div>
+                            <div class="chart-body donut-wrap">
+                                <canvas id="statusChart"></canvas>
+                                <div class="donut-center" id="donutCenter"></div>
+                            </div>
+                            <div class="donut-legend" id="donutLegend"></div>
+                        </div>
+                    </div>
+
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div class="chart-title">Daily Task Completion</div>
+                                <div class="chart-sub">Last 14 days productivity</div>
+                            </div>
+                            <div class="chart-body"><canvas id="taskChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div class="chart-title">Department Budgets</div>
+                                <div class="chart-sub">Allocation by department ($K)</div>
+                            </div>
+                            <div class="chart-body"><canvas id="deptChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <div class="chart-title">Priority Distribution</div>
+                                <div class="chart-sub">Report urgency breakdown</div>
+                            </div>
+                            <div class="chart-body"><canvas id="priorityChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <div>
+                                <div class="chart-title">Recent Activity Feed</div>
+                                <div class="chart-sub" id="activitySub"></div>
+                            </div>
+                            <button class="btn-ghost"
+                                onclick="switchTab('reports', document.querySelector('[data-tab=reports]'))">View all
+                                →</button>
+                        </div>
+                        <div id="activityFeed"></div>
+                    </div>
+                </section>
+
+                <!-- ── REPORTS ── -->
+                <section class="tab-pane" id="tab-reports">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Financial Reports</h1>
+                            <p class="page-sub" id="reportsSub">View and manage submitted reports</p>
+                        </div>
+                        <div class="page-header-actions">
+                            <button class="btn-primary-sm"
+                                onclick="switchTab('submit', document.querySelector('[data-tab=submit]'))">+ New
+                                Report</button>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="filter-search-wrap">
+                            <span class="filter-search-icon">⌕</span>
+                            <input type="text" id="searchInput" class="filter-search" placeholder="Search reports..."
+                                oninput="filterReports()" />
+                        </div>
+                        <div class="filter-chips" id="statusFilter">
+                            <button class="filter-chip active" data-status="all"
+                                onclick="setStatusFilter('all',this)">All</button>
+                            <button class="filter-chip" data-status="pending"
+                                onclick="setStatusFilter('pending',this)">Pending</button>
+                            <button class="filter-chip" data-status="approved"
+                                onclick="setStatusFilter('approved',this)">Approved</button>
+                            <button class="filter-chip" data-status="flagged"
+                                onclick="setStatusFilter('flagged',this)">Flagged</button>
+                            <button class="filter-chip" data-status="review"
+                                onclick="setStatusFilter('review',this)">Review</button>
+                        </div>
+                        <div class="filter-sort">
+                            <select id="sortSelect" class="filter-select" onchange="filterReports()">
+                                <option value="date-desc">Newest first</option>
+                                <option value="date-asc">Oldest first</option>
+                                <option value="amount-desc">Highest amount</option>
+                                <option value="amount-asc">Lowest amount</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="workerFilterBar" class="worker-filter-bar" style="display:none">
+                        <div class="worker-filter-label">Filter by worker:</div>
+                        <div class="worker-chips" id="workerChips"></div>
+                    </div>
+
+                    <div class="data-card no-pad">
+                        <div class="table-toolbar" id="tableToolbar">
+                            <span class="table-count" id="tableCount"></span>
+                            <div class="table-toolbar-right">
+                                <button class="btn-ghost btn-xs" onclick="exportCSV()">⬇ Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table" id="reportsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Report ID</th>
+                                        <th>Title</th>
+                                        <th>Worker</th>
+                                        <th>Department</th>
+                                        <th>Amount</th>
+                                        <th>Period</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── SUBMIT ── -->
+                <section class="tab-pane" id="tab-submit">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Submit New Report</h1>
+                            <p class="page-sub">Create a financial report or daily task log for corporate audit</p>
+                        </div>
+                    </div>
+                    <div class="submit-layout">
+                        <div class="submit-form-card">
+                            <div class="submit-form-section">
+                                <div class="submit-section-title">Report Classification</div>
+                                <div class="field-row-3">
+                                    <div class="field-group">
+                                        <label class="field-label">Report Type</label>
+                                        <select id="rptType" class="field-input field-select">
+                                            <option value="Financial Audit">Financial Audit</option>
+                                            <option value="Daily Task Log">Daily Task Log</option>
+                                            <option value="Expense Report">Expense Report</option>
+                                            <option value="Revenue Statement">Revenue Statement</option>
+                                            <option value="Compliance Review">Compliance Review</option>
+                                            <option value="Budget Variance">Budget Variance</option>
+                                            <option value="Risk Assessment">Risk Assessment</option>
+                                            <option value="Payroll Report">Payroll Report</option>
+                                        </select>
+                                    </div>
+                                    <div class="field-group">
+                                        <label class="field-label">Fiscal Period</label>
+                                        <select id="rptPeriod" class="field-input field-select">
+                                            <option>Q1 2025</option>
+                                            <option>Q2 2025</option>
+                                            <option>Q3 2025</option>
+                                            <option selected>Q4 2025</option>
+                                            <option>Q1 2026</option>
+                                            <option>Q2 2026</option>
+                                        </select>
+                                    </div>
+                                    <div class="field-group">
+                                        <label class="field-label">Priority Level</label>
+                                        <select id="rptPriority" class="field-input field-select">
+                                            <option value="Low">🟢 Low</option>
+                                            <option value="Medium" selected>🟡 Medium</option>
+                                            <option value="High">🟠 High</option>
+                                            <option value="Critical">🔴 Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label class="field-label">Report Title</label>
+                                    <input type="text" id="rptTitle" class="field-input"
+                                        placeholder="e.g. Q4 Financial Audit — Finance Department" />
+                                </div>
+                            </div>
+
+                            <div class="submit-form-section">
+                                <div class="submit-section-title">Financial Details</div>
+                                <div class="field-row">
+                                    <div class="field-group">
+                                        <label class="field-label">Reported Amount (USD)</label>
+                                        <div class="field-wrap amount-wrap">
+                                            <span class="field-prefix">$</span>
+                                            <input type="number" id="rptAmount" class="field-input amount-input"
+                                                placeholder="0.00" step="0.01" />
+                                        </div>
+                                    </div>
+                                    <div class="field-group">
+                                        <label class="field-label">Budget Reference (USD)</label>
+                                        <div class="field-wrap amount-wrap">
+                                            <span class="field-prefix">$</span>
+                                            <input type="number" id="rptBudget" class="field-input amount-input"
+                                                placeholder="0.00" step="0.01" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="variance-display" id="varianceDisplay" style="display:none"></div>
+                            </div>
+
+                            <div class="submit-form-section">
+                                <div class="submit-section-title">Report Content</div>
+                                <div class="field-group">
+                                    <label class="field-label">Executive Summary</label>
+                                    <textarea id="rptDesc" class="field-input field-textarea" rows="4"
+                                        placeholder="Provide a comprehensive summary of this report period, key activities, and overall financial position..."></textarea>
+                                </div>
+                                <div class="field-group">
+                                    <label class="field-label">Key Findings &amp; Completed Tasks</label>
+                                    <textarea id="rptFindings" class="field-input field-textarea" rows="4"
+                                        placeholder="1. Completed quarterly reconciliation&#10;2. Reviewed all vendor invoices&#10;3. Identified cost-saving opportunities..."></textarea>
+                                </div>
+                                <div class="field-group">
+                                    <label class="field-label">Risk Flags &amp; Notes (optional)</label>
+                                    <textarea id="rptRisks" class="field-input field-textarea" rows="3"
+                                        placeholder="Any anomalies, risks, or items requiring admin attention..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="submit-actions">
+                                <div class="submit-disclaimer">
+                                    <span class="submit-disclaimer-icon">🔒</span>
+                                    Report will be submitted for admin review. Once submitted, reports cannot be edited.
+                                </div>
+                                <div class="submit-btns">
+                                    <button class="btn-ghost" onclick="clearForm()">Clear</button>
+                                    <button class="btn-submit" onclick="submitReport()">
+                                        Submit Report
+                                        <span class="btn-submit-icon">→</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="submit-sidebar">
+                            <div class="submit-sidebar-card">
+                                <div class="submit-sidebar-title">Submission Guide</div>
+                                <div class="guide-steps">
+                                    <div class="guide-step">
+                                        <div class="guide-step-num">1</div>
+                                        <div>Choose the correct report type and fiscal period</div>
+                                    </div>
+                                    <div class="guide-step">
+                                        <div class="guide-step-num">2</div>
+                                        <div>Enter exact financial amounts for audit accuracy</div>
+                                    </div>
+                                    <div class="guide-step">
+                                        <div class="guide-step-num">3</div>
+                                        <div>Write a clear executive summary of the period</div>
+                                    </div>
+                                    <div class="guide-step">
+                                        <div class="guide-step-num">4</div>
+                                        <div>List all key findings and completed tasks</div>
+                                    </div>
+                                    <div class="guide-step">
+                                        <div class="guide-step-num">5</div>
+                                        <div>Flag any risks or discrepancies for admin review</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="submit-sidebar-card" id="myStatsCard"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── TASK LOGS ── -->
+                <section class="tab-pane" id="tab-tasks">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Daily Task Logs</h1>
+                            <p class="page-sub">Track and review daily work activities</p>
+                        </div>
+                        <button class="btn-primary-sm" onclick="openAddTask()">+ Log Task</button>
+                    </div>
+                    <div class="charts-row" style="margin-bottom:24px">
+                        <div class="chart-card">
+                            <div class="chart-title">Weekly Progress</div>
+                            <div class="chart-sub">Tasks completed per day this week</div>
+                            <div class="chart-body" style="height:160px"><canvas id="weeklyTaskChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Completion Rate</div>
+                            <div class="chart-sub">Overall task completion this quarter</div>
+                            <div class="chart-body donut-wrap" style="height:160px">
+                                <canvas id="taskCompChart"></canvas>
+                                <div class="donut-center" id="taskDonutCenter"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-card no-pad">
+                        <div class="table-toolbar">
+                            <span class="table-count" id="taskCount"></span>
+                            <button class="btn-ghost btn-xs" onclick="openAddTask()">+ Add Entry</button>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Task Description</th>
+                                        <th>Category</th>
+                                        <th>Hours</th>
+                                        <th>Worker</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taskLogsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── ANALYTICS ── -->
+                <section class="tab-pane" id="tab-analytics">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Financial Analytics</h1>
+                            <p class="page-sub">Deep-dive into financial performance metrics</p>
+                        </div>
+                    </div>
+                    <div class="kpi-grid" id="analyticsKpi"></div>
+                    <div class="charts-row">
+                        <div class="chart-card large">
+                            <div class="chart-title">Cumulative Audit Value — YTD</div>
+                            <div class="chart-sub">Running total of all reported financial figures</div>
+                            <div class="chart-body"><canvas id="cumulativeChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Amount by Report Type</div>
+                            <div class="chart-sub">Financial breakdown by category</div>
+                            <div class="chart-body"><canvas id="typeChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-title">Monthly Submissions</div>
+                            <div class="chart-sub">Report volume trend</div>
+                            <div class="chart-body"><canvas id="submissionChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Approval Rate Over Time</div>
+                            <div class="chart-sub">Report approval vs flagging rate</div>
+                            <div class="chart-body"><canvas id="approvalChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Avg. Report Value</div>
+                            <div class="chart-sub">Per department average ($)</div>
+                            <div class="chart-body"><canvas id="avgValChart"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── INTEGRITY ── -->
+                <section class="tab-pane" id="tab-integrity">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Data Integrity &amp; Audit</h1>
+                            <p class="page-sub">Automated compliance checks, anomaly detection, and data verification
+                            </p>
+                        </div>
+                        <button class="btn-primary-sm" onclick="runFullAudit()">▶ Run Full Audit</button>
+                    </div>
+
+                    <div class="integrity-hero" id="integrityHero"></div>
+                    <div class="integrity-kpi-grid" id="integrityKpi"></div>
+
+                    <div class="charts-row">
+                        <div class="data-card">
+                            <div class="data-card-header">
+                                <div class="chart-title">Anomaly Detection</div>
+                                <div class="chart-sub">Transactions flagged by automated rules</div>
+                            </div>
+                            <div id="anomalyList"></div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-card-header">
+                                <div class="chart-title">Compliance Checklist</div>
+                                <div class="chart-sub">Regulatory &amp; internal policy requirements</div>
+                            </div>
+                            <div id="complianceList"></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" style="margin-bottom:24px">
+                        <div class="chart-title">30-Day Audit Trail</div>
+                        <div class="chart-sub">Report submission and review activity</div>
+                        <div class="chart-body" style="height:180px"><canvas id="auditTrailChart"></canvas></div>
+                    </div>
+                </section>
+
+                <!-- ── ADMIN ── -->
+                <section class="tab-pane" id="tab-admin">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">👑 Admin Control Panel</h1>
+                            <p class="page-sub">Full enterprise visibility — all workers, reports, and financial data
+                            </p>
+                        </div>
+                    </div>
+                    <div class="kpi-grid" id="adminKpi"></div>
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-title">Worker Performance</div>
+                            <div class="chart-sub">Reports submitted per worker</div>
+                            <div class="chart-body"><canvas id="workerPerfChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Department Financial Load</div>
+                            <div class="chart-sub">Total reported value by department</div>
+                            <div class="chart-body"><canvas id="deptLoadChart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title">Status Heatmap</div>
+                            <div class="chart-sub">Report status breakdown per worker</div>
+                            <div class="chart-body"><canvas id="statusHeatChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="data-card no-pad" style="margin-bottom:24px">
+                        <div class="table-toolbar">
+                            <span class="chart-title" style="font-size:14px">All Registered Workers</span>
+                            <span class="table-count" id="workerCount"></span>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Worker</th>
+                                        <th>Department</th>
+                                        <th>Reports</th>
+                                        <th>Total Reported</th>
+                                        <th>Approved</th>
+                                        <th>Flagged</th>
+                                        <th>Last Active</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="workersBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="data-card no-pad">
+                        <div class="table-toolbar">
+                            <span class="chart-title" style="font-size:14px">⏳ Pending Approvals</span>
+                            <span class="table-count" id="pendingCount"></span>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Report</th>
+                                        <th>Worker</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Priority</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── AUDIT LOG ── -->
+                <section class="tab-pane" id="tab-auditlog">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">System Audit Log</h1>
+                            <p class="page-sub">Complete record of all system actions and user activities</p>
+                        </div>
+                        <button class="btn-ghost" onclick="clearAuditLog()">Clear Log</button>
+                    </div>
+                    <div class="data-card no-pad">
+                        <div class="table-toolbar">
+                            <span class="table-count" id="auditLogCount"></span>
+                        </div>
+                        <div id="auditLogList" style="padding:8px 0"></div>
+                    </div>
+                </section>
+
+            </div><!-- /page-content -->
+        </main>
+    </div><!-- /appScreen -->
+
+    <!-- ============================================================
+       MODAL
+  ============================================================ -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-box" id="modalBox">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-sub" id="modalSub"></div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <!-- ==================F==========================================
+       TOAST CONTAINER
+  ============================================================ -->
+    <div id="toastContainer"></div>
+<script src="init.js"></script>
+
+</body>
+
+</html>
